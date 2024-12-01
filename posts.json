@@ -1,0 +1,14 @@
+[
+    {
+        "title": "Post Title 1",
+        "date": "2024-12-01",
+        "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        "link": "post1.html"
+    },
+    {
+        "title": "Post Title 2",
+        "date": "2024-11-30",
+        "content": "Nullam ut velit vitae sem ullamcorper scelerisque.",
+        "link": "post2.html"
+    }
+]
