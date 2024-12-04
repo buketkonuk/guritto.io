@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/audiojs/0.1.1/audiojs.css">
     <style>
         /* Reset and Base Styles */
         body {
@@ -104,26 +105,23 @@
         }
 
         .audio-player {
-            margin-top: 10px;
+            margin-top: 20px;
         }
 
-        .audio-player button {
+        /* Styling for Audio.js */
+        .audiojs {
             background: #0077cc;
             color: #fff;
-            border: none;
-            padding: 5px 10px;
             border-radius: 5px;
-            cursor: pointer;
-            margin-right: 5px;
+            padding: 10px;
         }
 
-        .audio-player button:hover {
-            background: #005fa3;
-        }
-
-        .audio-player input[type="range"] {
-            width: 100%;
-            margin-top: 5px;
+        .audiojs .play-pause {
+            background: #fff;
+            color: #0077cc;
+            border: none;
+            border-radius: 5px;
+            padding: 5px;
         }
     </style>
 </head>
@@ -155,32 +153,36 @@
         <p>Copyright © 2024 My Blog. All Rights Reserved.</p>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/audiojs/0.1.1/audiojs.min.js"></script>
     <script>
-        let currentAudio = null;
-        let progressInterval = null;
-
         async function fetchPostsFromGoogleSheet() {
             try {
-                const sheetId = '1IST2g_ZKdDSh-9pGgRHuLQ9Xx84x4lgrf7bmVQBVGVk';
-                const apiKey = 'AIzaSyAENbdWh_w8XJiZiUh3V3EPzshvDKDbtWU';
-                const range = 'Sheet1';
+                const sheetId = '1IST2g_ZKdDSh-9pGgRHuLQ9Xx84x4lgrf7bmVQBVGVk'; // Your Google Sheets ID
+                const apiKey = 'AIzaSyAENbdWh_w8XJiZiUh3V3EPzshvDKDbtWU';   // Your API Key
+                const range = 'Sheet1';         // Your range (e.g., "Sheet1!A1:D")
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
 
+                // Fetch data from Google Sheets
                 const response = await fetch(url);
                 const data = await response.json();
 
+                // Get rows (excluding the header row)
                 const rows = data.values.slice(1);
 
+                // Containers for posts and recent posts
                 const postsContainer = document.getElementById('posts');
                 const recentPostsContainer = document.getElementById('recent-posts');
 
+                // Clear any existing content
                 postsContainer.innerHTML = '';
                 recentPostsContainer.innerHTML = '';
 
+                // Loop through the rows and render each post
                 rows.forEach((row, index) => {
                     const [title, date, content, link] = row;
-                    const audioFile = `audio/post${index + 1}.wav`;
+                    const audioFile = `audio/post${index + 1}.wav`; // Change the file path if needed
 
+                    // Create the main post element
                     const postHTML = `
                         <div class="post">
                             <h2>${title}</h2>
@@ -188,54 +190,30 @@
                             <p>${content}</p>
                             <a href="${link}" target="_blank">Read more</a>
                             <div class="audio-player">
-                                <button onclick="playAudio('${audioFile}', ${index})">Play</button>
-                                <button onclick="pauseAudio()">Pause</button>
-                                <input type="range" id="progress-${index}" min="0" max="100" value="0">
+                                <audio src="${audioFile}" preload="auto"></audio>
                             </div>
                         </div>
                     `;
                     postsContainer.innerHTML += postHTML;
 
+                    // Add to recent posts sidebar
                     const recentPostHTML = `
                         <li><a href="${link}" target="_blank">${title}</a></li>
                     `;
                     recentPostsContainer.innerHTML += recentPostHTML;
                 });
+
+                // Initialize Audio.js
+                audiojs.events.ready(function() {
+                    audiojs.createAll();
+                });
+
             } catch (error) {
                 console.error('Error fetching posts from Google Sheets:', error);
             }
         }
 
-        function playAudio(audioFile, index) {
-            if (!currentAudio) {
-                currentAudio = new Audio(audioFile);
-                attachProgressListener(index);
-            } else if (currentAudio.src !== audioFile) {
-                currentAudio.pause();
-                currentAudio = new Audio(audioFile);
-                attachProgressListener(index);
-            }
-
-            currentAudio.play();
-        }
-
-        function pauseAudio() {
-            if (currentAudio && !currentAudio.paused) {
-                currentAudio.pause();
-            }
-        }
-
-        function attachProgressListener(index) {
-            const progressBar = document.getElementById(`progress-${index}`);
-            clearInterval(progressInterval);
-
-            currentAudio.addEventListener('timeupdate', () => {
-                if (currentAudio && progressBar) {
-                    progressBar.value = (currentAudio.currentTime / currentAudio.duration) * 100;
-                }
-            });
-        }
-
+        // Fetch posts when the page loads
         document.addEventListener('DOMContentLoaded', fetchPostsFromGoogleSheet);
     </script>
 </body>
