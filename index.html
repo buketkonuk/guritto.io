@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Blog</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/audiojs/0.1.1/audiojs.css">
     <style>
         /* Reset and Base Styles */
         body {
@@ -108,20 +107,42 @@
             margin-top: 20px;
         }
 
-        /* Styling for Audio.js */
-        .audiojs {
-            background: #0077cc;
-            color: #fff;
-            border-radius: 5px;
-            padding: 10px;
+        .audio-player audio {
+            width: 100%;
         }
 
-        .audiojs .play-pause {
-            background: #fff;
-            color: #0077cc;
+        .audio-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .audio-controls button {
+            background-color: #0077cc;
+            color: #fff;
+            padding: 5px 10px;
             border: none;
             border-radius: 5px;
-            padding: 5px;
+            cursor: pointer;
+        }
+
+        .audio-controls button:hover {
+            background-color: #005fa3;
+        }
+
+        .audio-controls .progress-bar {
+            flex-grow: 1;
+            height: 5px;
+            background-color: #ccc;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+
+        .audio-controls .progress-bar div {
+            height: 100%;
+            background-color: #0077cc;
+            width: 0%;
         }
     </style>
 </head>
@@ -153,7 +174,6 @@
         <p>Copyright © 2024 My Blog. All Rights Reserved.</p>
     </footer>
 
-    <script src="/audiojs/audio.min.js"></script>
     <script>
         async function fetchPostsFromGoogleSheet() {
             try {
@@ -190,7 +210,14 @@
                             <p>${content}</p>
                             <a href="${link}" target="_blank">Read more</a>
                             <div class="audio-player">
-                                <audio src="${audioFile}" preload="auto"></audio>
+                                <audio id="audio-${index}" src="${audioFile}" preload="auto"></audio>
+                                <div class="audio-controls">
+                                    <button onclick="toggleAudio(${index})" id="playPauseBtn-${index}">Play</button>
+                                    <div class="progress-bar" onclick="seekAudio(event, ${index})">
+                                        <div id="progress-${index}"></div>
+                                    </div>
+                                    <button onclick="stopAudio(${index})">Stop</button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -202,15 +229,50 @@
                     `;
                     recentPostsContainer.innerHTML += recentPostHTML;
                 });
-
-                // Initialize Audio.js
-                audiojs.events.ready(function() {
-                    audiojs.createAll();
-                });
-
             } catch (error) {
                 console.error('Error fetching posts from Google Sheets:', error);
             }
+        }
+
+        // Play/Pause audio
+        function toggleAudio(index) {
+            const audio = document.getElementById(`audio-${index}`);
+            const playPauseBtn = document.getElementById(`playPauseBtn-${index}`);
+            const progress = document.getElementById(`progress-${index}`);
+
+            if (audio.paused) {
+                audio.play();
+                playPauseBtn.textContent = 'Pause';
+            } else {
+                audio.pause();
+                playPauseBtn.textContent = 'Play';
+            }
+
+            // Update progress bar as the audio plays
+            audio.ontimeupdate = function() {
+                const progressPercent = (audio.currentTime / audio.duration) * 100;
+                progress.style.width = `${progressPercent}%`;
+            };
+        }
+
+        // Stop audio and reset
+        function stopAudio(index) {
+            const audio = document.getElementById(`audio-${index}`);
+            const playPauseBtn = document.getElementById(`playPauseBtn-${index}`);
+            const progress = document.getElementById(`progress-${index}`);
+
+            audio.pause();
+            audio.currentTime = 0;
+            playPauseBtn.textContent = 'Play';
+            progress.style.width = '0%';
+        }
+
+        // Seek through audio by clicking the progress bar
+        function seekAudio(event, index) {
+            const audio = document.getElementById(`audio-${index}`);
+            const progressBar = document.querySelector(`#progress-${index}`).parentElement;
+            const clickPosition = (event.pageX - progressBar.offsetLeft) / progressBar.offsetWidth;
+            audio.currentTime = audio.duration * clickPosition;
         }
 
         // Fetch posts when the page loads
