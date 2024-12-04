@@ -114,6 +114,7 @@
             padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
+            margin-right: 5px;
         }
 
         .audio-player button:hover {
@@ -150,6 +151,8 @@
     </footer>
 
     <script>
+        let currentAudio = null; // Keep track of the currently playing audio
+
         async function fetchPostsFromGoogleSheet() {
             try {
                 // Google Sheets API endpoint
@@ -186,7 +189,8 @@
                             <p>${content}</p>
                             <a href="${link}" target="_blank">Read more</a>
                             <div class="audio-player">
-                                <button onclick="playAudio('${audioFile}')">Play Audio</button>
+                                <button onclick="playAudio('${audioFile}')">Play</button>
+                                <button onclick="stopAudio()">Stop</button>
                             </div>
                         </div>
                     `;
@@ -204,8 +208,23 @@
         }
 
         function playAudio(audioFile) {
-            const audio = new Audio(audioFile);
-            audio.play();
+            // Stop the current audio if it exists
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // Play the new audio file
+            currentAudio = new Audio(audioFile);
+            currentAudio.play();
+        }
+
+        function stopAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
         }
 
         // Fetch posts when the page loads
