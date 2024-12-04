@@ -102,6 +102,23 @@
         footer p {
             margin: 0;
         }
+
+        .audio-player {
+            margin-top: 10px;
+        }
+
+        .audio-player button {
+            background: #0077cc;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .audio-player button:hover {
+            background: #005fa3;
+        }
     </style>
 </head>
 <body>
@@ -159,7 +176,7 @@
                 // Loop through the rows and render each post
                 rows.forEach((row, index) => {
                     const [title, date, content, link] = row;
-                    const audioFile = `audio/post${index + 1}.wav`; // Replace with actual audio file paths
+                    const audioFile = `audio/post${index + 1}.wav`; // Correct file path for GitHub Pages
 
                     // Create the main post element
                     const postHTML = `
