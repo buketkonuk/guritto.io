@@ -189,7 +189,7 @@
                             <a href="${link}" target="_blank">Read more</a>
                             <div class="audio-player">
                                 <button onclick="playAudio('${audioFile}', ${index})">Play</button>
-                                <button onclick="stopAudio()">Stop</button>
+                                <button onclick="pauseAudio()">Pause</button>
                                 <input type="range" id="progress-${index}" min="0" max="100" value="0">
                             </div>
                         </div>
@@ -207,12 +207,11 @@
         }
 
         function playAudio(audioFile, index) {
-            if (currentAudio) {
-                currentAudio.pause();
-                clearInterval(progressInterval);
+            if (!currentAudio || currentAudio.src !== audioFile) {
+                if (currentAudio) currentAudio.pause(); // Pause the previous audio if a new one starts
+                currentAudio = new Audio(audioFile);
             }
 
-            currentAudio = new Audio(audioFile);
             const progressBar = document.getElementById(`progress-${index}`);
 
             currentAudio.play();
@@ -228,12 +227,10 @@
             });
         }
 
-        function stopAudio() {
-            if (currentAudio) {
+        function pauseAudio() {
+            if (currentAudio && !currentAudio.paused) {
                 currentAudio.pause();
-                currentAudio.currentTime = 0;
                 clearInterval(progressInterval);
-                currentAudio = null;
             }
         }
 
