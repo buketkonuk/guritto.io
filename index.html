@@ -156,7 +156,7 @@
     </footer>
 
     <script>
-        let currentAudio = null; // Keep track of the currently playing audio
+        let currentAudio = null;
         let progressInterval = null;
 
         async function fetchPostsFromGoogleSheet() {
@@ -207,31 +207,33 @@
         }
 
         function playAudio(audioFile, index) {
-            if (!currentAudio || currentAudio.src !== audioFile) {
-                if (currentAudio) currentAudio.pause(); // Pause the previous audio if a new one starts
+            if (!currentAudio) {
                 currentAudio = new Audio(audioFile);
+                attachProgressListener(index);
+            } else if (currentAudio.src !== audioFile) {
+                currentAudio.pause();
+                currentAudio = new Audio(audioFile);
+                attachProgressListener(index);
             }
 
-            const progressBar = document.getElementById(`progress-${index}`);
-
             currentAudio.play();
-            progressInterval = setInterval(() => {
-                if (currentAudio && progressBar) {
-                    progressBar.value = (currentAudio.currentTime / currentAudio.duration) * 100;
-                }
-            }, 500);
-
-            currentAudio.addEventListener('ended', () => {
-                clearInterval(progressInterval);
-                progressBar.value = 0;
-            });
         }
 
         function pauseAudio() {
             if (currentAudio && !currentAudio.paused) {
                 currentAudio.pause();
-                clearInterval(progressInterval);
             }
+        }
+
+        function attachProgressListener(index) {
+            const progressBar = document.getElementById(`progress-${index}`);
+            clearInterval(progressInterval);
+
+            currentAudio.addEventListener('timeupdate', () => {
+                if (currentAudio && progressBar) {
+                    progressBar.value = (currentAudio.currentTime / currentAudio.duration) * 100;
+                }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', fetchPostsFromGoogleSheet);
