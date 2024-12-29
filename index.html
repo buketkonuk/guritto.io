@@ -41,30 +41,30 @@
                 const apiKey = 'AIzaSyAENbdWh_w8XJiZiUh3V3EPzshvDKDbtWU';   // Your API Key
                 const range = 'Sheet1';         // Your range (e.g., "Sheet1!A1:D")
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
-
+    
                 // Fetch data from Google Sheets
                 const response = await fetch(url);
                 const data = await response.json();
-
+    
                 // Get rows (excluding the header row)
                 const rows = data.values.slice(1);
-
+    
                 // Containers for posts and recent posts
                 const postsContainer = document.getElementById('posts');
                 const recentPostsContainer = document.getElementById('recent-posts');
-
+    
                 // Clear any existing content
                 postsContainer.innerHTML = '';
                 recentPostsContainer.innerHTML = '';
-
+    
                 // Loop through the rows and render each post
                 rows.forEach((row, index) => {
                     const [title, date, content, link] = row;
                     const audioFile = `audio/post${index + 1}.wav`; // Change the file path if needed
-
+    
                     // Create the main post element
                     const postHTML = `
-                        <div class="post">
+                        <div class="post" id="post-${index}">
                             <h2>${title}</h2>
                             <p><small>Published on: ${date}</small></p>
                             <p>${content}</p>
@@ -82,10 +82,10 @@
                         </div>
                     `;
                     postsContainer.innerHTML += postHTML;
-
+    
                     // Add to recent posts sidebar
                     const recentPostHTML = `
-                        <li><a href="${link}" target="_blank">${title}</a></li>
+                        <li><a href="#post-${index}">${title}</a></li>
                     `;
                     recentPostsContainer.innerHTML += recentPostHTML;
                 });
@@ -93,13 +93,13 @@
                 console.error('Error fetching posts from Google Sheets:', error);
             }
         }
-
+    
         // Play/Pause audio
         function toggleAudio(index) {
             const audio = document.getElementById(`audio-${index}`);
             const playPauseBtn = document.getElementById(`playPauseBtn-${index}`);
             const progress = document.getElementById(`progress-${index}`);
-
+    
             if (audio.paused) {
                 audio.play();
                 playPauseBtn.textContent = 'Pause';
@@ -107,26 +107,24 @@
                 audio.pause();
                 playPauseBtn.textContent = 'Play';
             }
-
+    
             // Update progress bar as the audio plays
             audio.ontimeupdate = function() {
                 const progressPercent = (audio.currentTime / audio.duration) * 100;
                 progress.style.width = `${progressPercent}%`;
             };
         }
-
+    
         // Stop audio and reset
         function stopAudio(index) {
             const audio = document.getElementById(`audio-${index}`);
             const playPauseBtn = document.getElementById(`playPauseBtn-${index}`);
             const progress = document.getElementById(`progress-${index}`);
-
+    
             audio.pause();
-            audio.currentTime = 0;
             playPauseBtn.textContent = 'Play';
-            progress.style.width = '0%';
         }
-
+    
         // Seek through audio by clicking the progress bar
         function seekAudio(event, index) {
             const audio = document.getElementById(`audio-${index}`);
@@ -134,9 +132,10 @@
             const clickPosition = (event.pageX - progressBar.offsetLeft) / progressBar.offsetWidth;
             audio.currentTime = audio.duration * clickPosition;
         }
-
+    
         // Fetch posts when the page loads
         document.addEventListener('DOMContentLoaded', fetchPostsFromGoogleSheet);
     </script>
+    
 </body>
 </html>
